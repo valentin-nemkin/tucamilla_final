@@ -1,0 +1,99 @@
+/* === Подключаем фирменные шрифты Camilla === */
+@import url('https://fonts.googleapis.com/css2?family=Anton+SC&family=Barlow+Semi+Condensed:wght@400;600&family=Manrope:wght@400;600;700&display=swap');
+
+/* === Tailwind Core === */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* === Глобальные переменные бренда Camilla Dating Help === */
+:root {
+  --primary: #E66F92;
+  --accent: #F45B69;
+  --secondary: #5DB59D;
+  --background: #FAFAFA;
+  --text-primary: #2E2E2E;
+  --text-secondary: #6C6C6C;
+
+  --brand-nude: #f8e6d0;
+  --brand-rose: #e6c4b6;
+
+  --radius: 0.625rem;
+  --font-sans: "Manrope", sans-serif;
+  --font-heading: "Anton SC", sans-serif;
+  --font-accent: "Barlow Semi Condensed", sans-serif;
+
+  --header-height: 80px;
+}
+
+/* === Темная тема === */
+.dark {
+  --background: #1b1b1b;
+  --text-primary: #f2f2f2;
+  --text-secondary: #b3b3b3;
+}
+
+/* === Базовые глобальные стили === */
+@layer base {
+  * {
+    @apply border-[var(--background)];
+  }
+
+  body {
+    @apply bg-[var(--background)] text-[var(--text-primary)] font-[var(--font-sans)];
+  }
+
+  h1, h2, h3 {
+    font-family: var(--font-heading);
+  }
+
+  p, a, span {
+    font-family: var(--font-accent);
+    color: var(--text-secondary);
+  }
+
+  li {
+    font-family: var(--font-accent);
+    color: var(--text-primary);
+    font-size: 1rem;
+    line-height: 1.6;
+  }
+}
+
+/* === Прокрутка и высота === */
+html {
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-gutter: stable;
+}
+
+body {
+  min-height: 100%;
+  height: auto;
+  overscroll-behavior-y: none;
+  background: var(--background);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+}
+
+.section-svh {
+  height: 100vh;
+  min-height: 100vh;
+}
+@supports (height: 100svh) {
+  .section-svh {
+    height: 100svh;
+    min-height: 100svh;
+  }
+}
+
+.hero-svh {
+  height: 100vh;
+  min-height: 100vh;
+}
+@supports (height: 100svh) {
+  .hero-svh {
+    height: 100svh;
+    min-height: 100svh;
+  }
+}
