@@ -1,26 +1,40 @@
+// /app/api/go/[offer]/route.ts
 import { NextResponse } from 'next/server'
-import { resolveOffer, listOffers } from '@/lib/offers'
+import { resolveOffer, listOffers, type OfferSlug } from '@/lib/offers'
 import { parseClickData } from '@/lib/parseClickData'
-import fs from 'fs'
-import path from 'path'
 
-// === Вспомогательная функция для парсинга cookies ===
+// === Вспомогательная функция для парсинга cookies (безопасная) ===============
 function getCookieValue(cookieHeader: string | null, name: string): string {
   if (!cookieHeader) return ''
-  const cookies = cookieHeader.split(';').map(c => c.trim())
-  const target = cookies.find(c => c.startsWith(name + '='))
-  return target ? decodeURIComponent(target.split('=')[1]) : ''
+  // cookieHeader: "a=1; fbclid=abc=123; session_id=xyz"
+  const parts = cookieHeader.split(';')
+  for (const raw of parts) {
+    const c = raw.trim()
+    const eq = c.indexOf('=')
+    if (eq <= 0) continue
+    const key = c.slice(0, eq)
+    const val = c.slice(eq + 1)
+    if (key === name) return decodeURIComponent(val)
+  }
+  return ''
 }
 
 // === API /api/go/[offer] =====================================================
-export async function GET(req: Request, context: { params: Promise<{ offer: string }> }) {
+export async function GET(
+  req: Request,
+  context: { params: Promise<{ offer: string }> }
+) {
   const { offer } = await context.params
+  const slug = offer as OfferSlug
 
   try {
     // === Проверяем валидность slug ===
     const availableOffers = listOffers()
-    if (!availableOffers.includes(offer as any)) {
-      return NextResponse.json({ error: `❌ Invalid offer slug: "${offer}"` }, { status: 400 })
+    if (!availableOffers.includes(slug)) {
+      return NextResponse.json(
+        { error: `❌ Invalid offer slug: "${offer}"` },
+        { status: 400 }
+      )
     }
 
     // === Парсим данные клика (utm, query и т.д.) ===
@@ -35,11 +49,14 @@ export async function GET(req: Request, context: { params: Promise<{ offer: stri
     if (fbclid) clickData.sub1 = fbclid
     if (sessionId) clickData.sub5 = sessionId
 
-    // === Генерируем финальный URL оффера ===
-    const redirectUrl = resolveOffer(offer as any, clickData)
+    // === Генерируем финальный URL оффера (вся логика только в resolveOffer) ===
+    const redirectUrl = resolveOffer(slug, clickData)
 
-        // === Возвращаем redirect URL как JSON ===
-    return NextResponse.json({ redirectUrl }, { status: 200 })
+    console.log('✅ Final redirect URL:', redirectUrl)
+    console.log('➡️ Redirecting to:', redirectUrl)
+
+    // === Возвращаем реальный redirect (307) без каких-либо правок URL ===
+    return NextResponse.redirect(redirectUrl, 307)
   } catch (error: any) {
     console.error('❌ Redirect error:', error)
     return NextResponse.json(
