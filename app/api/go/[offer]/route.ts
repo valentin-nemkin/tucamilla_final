@@ -42,12 +42,17 @@ export async function GET(
 
     // === Читаем cookie из заголовка ===
     const cookieHeader = req.headers.get('cookie')
-    const fbclid = getCookieValue(cookieHeader, 'fbclid')
+    const fbclidFromCookie = getCookieValue(cookieHeader, 'fbclid')
     const sessionId = getCookieValue(cookieHeader, 'session_id')
 
-    // === Добавляем fbclid → sub1 и session_id → sub5 ===
-    if (fbclid) clickData.sub1 = fbclid
-    if (sessionId) clickData.sub5 = sessionId
+    // ✅ ИСПРАВЛЕНО: Добавляем fbclid и session_id ТОЛЬКО если их нет в clickData
+    // Не перезаписываем через sub1/sub5, чтобы не ломать логику buildSubParams
+    if (fbclidFromCookie && !clickData.fbclid) {
+      clickData.fbclid = fbclidFromCookie
+    }
+    if (sessionId && !clickData.session_id) {
+      clickData.session_id = sessionId
+    }
 
     // === Генерируем финальный URL оффера (вся логика только в resolveOffer) ===
     const redirectUrl = resolveOffer(slug, clickData)
