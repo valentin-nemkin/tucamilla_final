@@ -1,8 +1,8 @@
 // /lib/offers.ts
 // ============================================================================
 // Модуль для работы с офферами и финальными URL редиректа.
-// Поддерживает передачу аналитических параметров sub1..sub5 в партнёрские ссылки.
-// Используется в /api/go/[offer]
+// Поддерживает передачу аналитических параметров aff_sub..aff_sub5.
+// Используется в /api/go/[offer].
 // ============================================================================
 
 import 'server-only'
@@ -47,7 +47,9 @@ export function safeAppendParams(baseUrl: string, params: Record<string, string 
   try {
     const url = new URL(baseUrl)
     for (const [key, value] of Object.entries(params)) {
-      if (value && value.trim() !== '') url.searchParams.set(key, value.trim())
+      if (value && value.trim() !== '' && !url.searchParams.has(key)) {
+        url.searchParams.set(key, value.trim())
+      }
     }
     return url.toString()
   } catch (error) {
@@ -58,39 +60,31 @@ export function safeAppendParams(baseUrl: string, params: Record<string, string 
 
 // === 2.7: Тип данных клика (ClickData) =====================================
 export interface ClickData {
-  // Идентификаторы Meta / Facebook
   fbclid?: string
   fbp?: string
   fbc?: string
-
-  // Рекламные ID
   campaign_id?: string
   adset_id?: string
   ad_id?: string
-
-  // UTM
   utm_source?: string
   utm_medium?: string
   utm_campaign?: string
   utm_content?: string
   utm_term?: string
-
-  // Сессия
   session_id: string
-
-  // Технические данные
   user_agent?: string
   ip?: string
+  [key: string]: any
 }
 
-// === 2.8: Формирование sub-параметров ======================================
+// === 2.8: Формирование aff_sub-параметров ==================================
 export function buildSubParams(click: ClickData): Record<string, string> {
   return {
-    sub1: click.fbclid ?? '',        // Уникальный FB Click ID
-    sub2: click.adset_id ?? '',      // Adset ID
-    sub3: click.ad_id ?? '',         // Ad ID
-    sub4: click.utm_source ?? '',    // Источник трафика
-    sub5: click.session_id,          // Уникальная сессия
+    aff_sub: click.fbclid ?? '',
+    aff_sub2: click.adset_id ?? '',
+    aff_sub3: click.ad_id ?? '',
+    aff_sub4: click.utm_source ?? '',
+    aff_sub5: click.session_id ?? '',
   }
 }
 
@@ -99,9 +93,28 @@ export function resolveOffer(slug: OfferSlug, click: ClickData): string {
   const offer = offersMap[slug]
   if (!offer) throw new Error(`❌ Оффер "${slug}" не найден в карте offersMap`)
 
+  // 1️⃣ Собираем базовые aff_sub-параметры
   const subParams = buildSubParams(click)
-  const finalUrl = safeAppendParams(offer.baseUrl, subParams)
-  return finalUrl
+
+  // 2️⃣ Перезаписываем, если переданы sub1..sub5
+  for (let i = 1; i <= 5; i++) {
+    const subKey = `sub${i}`
+    const affKey = i === 1 ? 'aff_sub' : `aff_sub${i}`
+    if (click[subKey]) subParams[affKey] = click[subKey]
+  }
+
+  // 3️⃣ Подставляем {sub1}..{sub5} в baseUrl
+  let baseUrl = offer.baseUrl
+  for (let i = 1; i <= 5; i++) {
+    const placeholder = `{sub${i}}`
+    const affKey = i === 1 ? 'aff_sub' : `aff_sub${i}`
+    const value = encodeURIComponent(subParams[affKey] || '')
+    baseUrl = baseUrl.replaceAll(placeholder, value)
+  }
+
+  // 4️⃣ Добавляем только source=Facebook, без дублей aff_sub
+  const finalUrl = safeAppendParams(baseUrl, { source: 'Facebook' })
+   return finalUrl
 }
 
 // === 2.10: Список всех офферов =============================================
