@@ -78,13 +78,14 @@ export interface ClickData {
 }
 
 // === 2.8: Формирование aff_sub-параметров ==================================
+// ✅ ИСПРАВЛЕНО: теперь соответствует логике из README
 export function buildSubParams(click: ClickData): Record<string, string> {
   return {
-    aff_sub: click.fbclid ?? '',
-    aff_sub2: click.adset_id ?? '',
-    aff_sub3: click.ad_id ?? '',
-    aff_sub4: click.utm_source ?? '',
-    aff_sub5: click.session_id ?? '',
+    aff_sub: click.utm_source ?? 'direct',
+    aff_sub2: click.utm_medium ?? 'none',
+    aff_sub3: click.utm_campaign ?? 'none',
+    aff_sub4: click.utm_content ?? 'none',
+    aff_sub5: click.fbclid ?? click.session_id,
   }
 }
 
@@ -114,7 +115,14 @@ export function resolveOffer(slug: OfferSlug, click: ClickData): string {
 
   // 4️⃣ Добавляем только source=Facebook, без дублей aff_sub
   const finalUrl = safeAppendParams(baseUrl, { source: 'Facebook' })
-   return finalUrl
+  
+  // 🔍 Логирование для отладки (можно удалить после проверки)
+  console.log('🔍 Offer slug:', slug)
+  console.log('📊 Sub params:', subParams)
+  console.log('🔗 Final URL:', finalUrl)
+  console.log('---')
+  
+  return finalUrl
 }
 
 // === 2.10: Список всех офферов =============================================
