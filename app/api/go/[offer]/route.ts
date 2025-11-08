@@ -38,24 +38,7 @@ export async function GET(req: Request, context: { params: Promise<{ offer: stri
     // === Генерируем финальный URL оффера ===
     const redirectUrl = resolveOffer(offer as any, clickData)
 
-    // === Логируем клик ===
-    const logPath = path.join(process.cwd(), 'data', 'logs', 'clicks.json')
-    const logEntry = {
-      slug: offer,
-      timestamp: new Date().toISOString(),
-      redirectUrl,
-      clickData,
-    }
-
-    fs.mkdirSync(path.dirname(logPath), { recursive: true })
-    let existingLogs = []
-    if (fs.existsSync(logPath)) {
-      existingLogs = JSON.parse(fs.readFileSync(logPath, 'utf8'))
-    }
-    existingLogs.push(logEntry)
-    fs.writeFileSync(logPath, JSON.stringify(existingLogs, null, 2), 'utf8')
-
-    // === Возвращаем redirect URL как JSON ===
+        // === Возвращаем redirect URL как JSON ===
     return NextResponse.json({ redirectUrl }, { status: 200 })
   } catch (error: any) {
     console.error('❌ Redirect error:', error)

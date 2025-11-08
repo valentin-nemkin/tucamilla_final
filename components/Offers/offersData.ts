@@ -7,7 +7,7 @@ import type { Offer } from '@/components/Offers/OfferCard'
 // === Массив офферов ===
 export const offersData: Offer[] = [
   {
-    id: 'adult_friendfinder',
+    id: 'adult-friend-finder',
     title: 'Adult FriendFinder',
     shortDescription:
       'Explore one of the world’s largest casual networks — over 80 million members ready for connection.',
@@ -29,7 +29,7 @@ export const offersData: Offer[] = [
     icon: '/offers/adult_friendfinder.png',
   },
   {
-    id: 'be_naughty',
+    id: 'benaughty',
     title: 'BeNaughty',
     shortDescription:
       'Join an international dating community built for playful connections and real chats.',
@@ -51,7 +51,7 @@ export const offersData: Offer[] = [
   },
   /*
   {
-    id: 'cougar_life',
+    id: 'cougar-life',
     title: 'Cougar Life',
     shortDescription:
       'Meet confident women who know what they want — real profiles, real chemistry.',
@@ -74,7 +74,7 @@ export const offersData: Offer[] = [
   */
 
   {
-    id: 'fling_com',
+    id: 'fling',
     title: 'Fling',
     shortDescription:
       'Casual chat and connections with real people — no long forms, no pressure.',
@@ -136,7 +136,7 @@ export const offersData: Offer[] = [
     icon: '/offers/instabang.png',
   },
   {
-    id: 'naughty_talk',
+    id: 'naughty-talk',
     title: 'Naughty Talk',
     shortDescription:
       'Private dating app for men 30 + — real people, real privacy.',
